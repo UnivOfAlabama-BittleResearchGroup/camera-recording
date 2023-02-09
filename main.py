@@ -7,6 +7,8 @@ import json
 
 dotenv.load_dotenv()
 
+# goal hour interval (save both full/downscale video)
+
 ip = os.environ.get("IP")
 ex_password = os.environ.get("EXPORT_PASS") # password for encrypted zip files
 disk_id = "SD_DISK"
