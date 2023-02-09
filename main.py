@@ -8,6 +8,8 @@ import time
 dotenv.load_dotenv()
 start_time = time.time()
 
+# goal hour interval (save both full/downscale video)
+
 ip = os.environ.get("IP")
 ex_password = os.environ.get("EXPORT_PASS") # password for encrypted zip files
 disk_id = "SD_DISK"
