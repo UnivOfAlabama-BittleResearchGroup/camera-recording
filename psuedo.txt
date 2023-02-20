@@ -1,0 +1,17 @@
+get all camera ip_list (time is cumulative)
+time = 0s
+
+for ip in ip_list
+    get recording id
+        return filtered_recording_id # time = 63s (ip range 191-198)
+
+    for rec_id in filtered_recording_id
+        get recording_times (start_time, end_time) # time = 65s (ip range 191-198)
+            delta time = end time - start_time
+            run time url function
+                one hour gaps from start time to end time
+            for times in time function
+                create URL with times
+            for url in urls
+                async write_export_recordings (url from time function)
+         
