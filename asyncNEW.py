@@ -107,7 +107,8 @@ def times_url(ip, rec_id, disk_id, times, output_path: Path):
 
         while (dt_start_time <= dt_stop_time):
             #print(dt_start_time, end="\n")
-            #hour_output_path = output_path / f"{dt_start_time.hour}.mkv"
+            hour = dt_start_time.strftime("%H")
+            hour_output_path = output_path / f"{hour}.mkv"
             #stop_time = ???
             #export_request_url = (f"http://{ip}/axis-cgi/record/export/exportrecording.cgi?schemaversion=1"
         #f"&recordingid={rec_id}&diskid={disk_id}&exportformat=matroska&starttime={start_time}&stoptime={end_time}")
@@ -122,7 +123,7 @@ def times_url(ip, rec_id, disk_id, times, output_path: Path):
         for time in times:
             str_start_time = time[0].strftime(format)
             str_end_time = time[1].strftime(format)
-            urls.append(f"http://{ip}/axis-cgi/record/export/exportrecording.cgi?schemaversion=1&recordingid={rec_id}&diskid={disk_id}&exportformat=matroska&starttime={str_start_time}&stoptime={str_end_time}")
+            urls.append([f"http://{ip}/axis-cgi/record/export/exportrecording.cgi?schemaversion=1&recordingid={rec_id}&diskid={disk_id}&exportformat=matroska&starttime={str_start_time}&stoptime={str_end_time}", hour_output_path])
 
         #print.pprint(urls)
 
