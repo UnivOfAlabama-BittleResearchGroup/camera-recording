@@ -18,16 +18,16 @@ start_time = time.time()
 
 # constants
 disk_id = "SD_DISK"
-year = datetime.utcnow().year
-month = str(datetime.utcnow().month).zfill(2)
-day = str(datetime.utcnow().day).zfill(2)
-date = datetime.utcnow()
-time_delta = date - timedelta(hours=1)
-l = range(24)
-times = [[date - timedelta(hours=_t) for _t in _l]
-         for _l in zip(l[1:], l[:-1])]  # this might need to change
+#year = datetime.utcnow().year
+#month = str(datetime.utcnow().month).zfill(2)
+#day = str(datetime.utcnow().day).zfill(2)
+#date = datetime.utcnow()
+#time_delta = date - timedelta(hours=1)
+#l = range(24)
+#times = [[date - timedelta(hours=_t) for _t in _l]
+         #for _l in zip(l[1:], l[:-1])]  # this might need to change
 # print(times)
-time_format = f"{year}-{month}-{day}Thh:mm:ssZ"  # YYYY-MM-DDThh:mm:ssZ
+#time_format = f"{year}-{month}-{day}Thh:mm:ssZ"  # YYYY-MM-DDThh:mm:ssZ
 
 '''
 get all camera ip_list
@@ -75,8 +75,7 @@ def get_recording_times(ip, rec_id, disk_id):
         end_time = times_dict['ExportRecordingResponse']['PropertiesSuccess']['ExportProperties']['@Stoptime']
 
         times = []
-        times.append(start_time)
-        times.append(end_time)
+        times.append([start_time, end_time])
 
         return times
     except:
@@ -85,52 +84,62 @@ def get_recording_times(ip, rec_id, disk_id):
         return []
 
 
-def times_url(ip, rec_id, disk_id, times, output_path: Path)->List[List[str, Path]]:
-    start_time = times[0]
-    stop_time = times[1]
-    format = "%Y-%m-%dT%H:%M:%S.%fZ"
+def times_url(ip, rec_id, disk_id, times, output_path: Path):
+    try:
+        start_time = times[0]
+        stop_time = times[1]
+        format = "%Y-%m-%dT%H:%M:%S.%fZ"
 
-    dt_start_time = datetime.strptime(start_time, format)
-    dt_stop_time = datetime.strptime(stop_time, format)
-    # print(dt_start_time)
-    # print(dt_stop_time)
+        dt_start_time = datetime.strptime(start_time, format)
+        dt_stop_time = datetime.strptime(stop_time, format)
+        # print(dt_start_time)
+        # print(dt_stop_time)
 
-    hour_delta = timedelta(hours=1)
-    new_time = dt_start_time + hour_delta
+        hour_delta = timedelta(hours=1)
+        #new_time = dt_start_time + hour_delta
 
-    delta = dt_stop_time - dt_start_time
-    # print(new_time)
-    # print(delta)
+        delta = dt_stop_time - dt_start_time
+        # print(new_time)
+        # print(delta)
 
-    urls = []
+        
+        times = []
 
-    while (dt_start_time <= dt_stop_time):
-        print(dt_start_time, end="\n")
-        hour_output_path = output_path / f"{dt_start_time.hour}.mkv"
-        stop_time = ???
-        export_request_url = (f"http://{ip}/axis-cgi/record/export/exportrecording.cgi?schemaversion=1"
-    f"&recordingid={rec_id}&diskid={disk_id}&exportformat=matroska&starttime={start_time}&stoptime={end_time}")
-        urls.append([export_request_url, hour_output_path])
-        dt_start_time += hour_delta
+        while (dt_start_time <= dt_stop_time):
+            #print(dt_start_time, end="\n")
+            #hour_output_path = output_path / f"{dt_start_time.hour}.mkv"
+            #stop_time = ???
+            #export_request_url = (f"http://{ip}/axis-cgi/record/export/exportrecording.cgi?schemaversion=1"
+        #f"&recordingid={rec_id}&diskid={disk_id}&exportformat=matroska&starttime={start_time}&stoptime={end_time}")
+            #urls.append([export_request_url, hour_output_path])
+            dt_end_time = dt_start_time + hour_delta
+            if dt_end_time > dt_stop_time:
+                dt_end_time = dt_stop_time
+            times.append([dt_start_time, dt_end_time])
+            dt_start_time += hour_delta
+        
+        urls = []
+        for time in times:
+            str_start_time = time[0].strftime(format)
+            str_end_time = time[1].strftime(format)
+            urls.append(f"http://{ip}/axis-cgi/record/export/exportrecording.cgi?schemaversion=1&recordingid={rec_id}&diskid={disk_id}&exportformat=matroska&starttime={str_start_time}&stoptime={str_end_time}")
 
-    '''
-    note to self - continue working on the psuedocode, was extremely helpful. need to figure out
-    how to best manage multiday recordings with time delta since it returns as a 5 day value
-    options include just rounding up hours and losing some initial footage, and then doing it by the hour in the future
+        #print.pprint(urls)
 
-    '''
+        return urls
+    except Exception as e:
+        print(start_time)
+        print(stop_time)
+        print(times)
+        print(
+            f"{ip} {rec_id} ValueError during times_url" + str(e))
+        return []
 
-    
-    print(export_request_url)
 
-    return 
-
-
-test = times_url("10.160.8.191", "20230211_082645_365E_B8A44F292D8D", disk_id, [
-                 '2023-02-15T14:36:33.076983Z', '2023-02-20T18:03:40.656422Z'])
+#test = times_url("10.160.8.191", "20230211_082645_365E_B8A44F292D8D", disk_id, ['2023-02-15T14:36:33.076983Z', '2023-02-20T18:03:40.656422Z'], 'C:/Users/abkarnik/Desktop/test')
 
 # for ip in ip list
-urls = []
+#urls = []
 
 
 async def fetch(session, url, output_path):
@@ -143,14 +152,16 @@ def get_export_urls(ip_list: List[str], output_path: Path)->List[str]:
     urls = []
     for ip in ip_list:
         ip_output_path = output_path / ip
-        ip_output_path.mkdir(exists_ok = True, parents = True)
+        ip_output_path.mkdir(exist_ok = True, parents = True)
         rec_ids = get_recording_id(ip)
         for rec_id in rec_ids:
             times_list = get_recording_times(ip, rec_id, disk_id)
             #print(times_list)
             for times in times_list:
-                time_output_path = ip_output_path / (datetime.date) # replace with times
-                time_output_path.mkdir(exists_ok = True, parents = True)
+                st = times[0] # start time for output path
+                et = times[1] # end time for output path
+                time_output_path = ip_output_path / (f"{st[0:10]}_{et[0:10]}") # replace with times
+                time_output_path.mkdir(exist_ok = True, parents = True)
                 urls.extend(times_url(ip, rec_id, disk_id, times, time_output_path))
 
     return urls
@@ -174,7 +185,8 @@ def run():
     ip_list = config_list["Config"]["ip"]
     output_path = Path(config_list["Config"]["output_path"])
 
-    export_recordings(get_export_urls(ip_list, output_path))
+    #pprint.pprint(get_export_urls(ip_list, output_path))
+    asyncio.run(export_recordings(get_export_urls(ip_list, output_path)))
 
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 Config:
-  output_path: C:\Users\Spraychamber\Desktop\DOE\camera-recording\export
+  output_path: C:\Users\abkarnik\Projects\camera-recording\export
+  output_path2: C:\Users\Spraychamber\Desktop\DOE\camera-recording\export
   ip:
     - 10.160.8.187
     - 10.160.8.188
