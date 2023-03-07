@@ -172,7 +172,9 @@ def get_export_urls(ip_list: List[str], output_path: Path)->List[str]:
             dt_start_time = datetime.strptime(st, FORMAT)
             dt_end_time = datetime.strptime(et, FORMAT)
             
-            dt_start_time = dt_start_time.replace(hour=dt_start_time.hour+1, minute=0, second=0, microsecond=0)
+            dt_start_time = dt_end_time - timedelta(hours=24)
+            # dt_start_time = dt_start_time + timedelta(hours=1)
+            dt_start_time = dt_start_time.replace(minute=0, second=0, microsecond=0)
             for day_delta in range((dt_end_time - dt_start_time).days):
                 target_day =  dt_start_time + timedelta(days=day_delta)
         
